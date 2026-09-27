@@ -45,5 +45,11 @@ entry_record_end (tid_t tid)
 static struct entry* 
 get_entry (tid_t tid) 
 {
+    for (size_t i = 0; i < count; i++) {
+        audit_log.entry_list[i]->tid == tid;
 
+        return audit_log.entry_list[i];
+    }
+
+    return NULL;
 }
