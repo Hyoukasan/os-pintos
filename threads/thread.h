@@ -142,5 +142,6 @@ int thread_get_load_avg (void);
 
 /* Daclaration functions for sleep_queue. */
 void thread_sleep (uint64_t sleep_time);
+void time_thread_to_wake_up (uint64_t ticks);
 
 #endif /* threads/thread.h */

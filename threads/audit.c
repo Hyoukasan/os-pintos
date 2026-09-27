@@ -1,55 +1,85 @@
 #include "threads/audit.h"
 #include <debug.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "devices/timer.h"
 #include "threads/malloc.h"
 
-static struct audit audit_log;
+static struct list audit_list;
 
-static struct entry* get_entry (tid_t tid);
+static struct audit* get_audit (tid_t tid);
 
 void
 init_audit (void)
 {
-    list_init (&audit_log.entry_list);
-    audit_log.count = 0;
+    list_init (&audit_list);
 }
 
 void 
-entry_record_start (tid_t tid, const char *name)
+audit_record_start (tid_t tid, const char *name)
 {
-    struct entry* e = (struct audit*)malloc (sizeof(struct audit));
-    ASSERT (new_entry != NULL);
+    struct audit* a = malloc (sizeof(struct audit));
+    ASSERT (a != NULL);
 
-    e->tid = tid;
-    strlcpy (e->name, name, sizeof (e->name));
-    e->tick_start = timer_ticks ();
-    e->tick_end = 0;
+    a->tid = tid;
+    strlcpy (a->name, name, sizeof (a->name));
+    a->tick_start = timer_ticks ();
+    a->tick_end = 0;
 
-    list_push_back (&audit_log.entry_list, &e);
-
-    audit_log.count++;
+    list_push_back (&audit_list, &a->elem);
 }
 
 void 
-entry_record_end (tid_t tid)
+audit_record_end (tid_t tid)
 {
-    struct entry* e = get_entry (tid);
+    struct audit* a = get_audit (tid);
 
-    if (e != NULL) {
-        e->end_tick = timer_ticks ();
+    if (a != NULL) {
+        a->tick_end = timer_ticks ();
     }
 }
 
-static struct entry* 
-get_entry (tid_t tid) 
+static struct audit* 
+get_audit (tid_t tid) 
 {
-    for (size_t i = 0; i < count; i++) {
-        audit_log.entry_list[i]->tid == tid;
+    struct list_elem *iter = list_begin (&audit_list);
+    struct list_elem *end = list_end (&audit_list);
 
-        return audit_log.entry_list[i];
+    struct audit *a;
+
+    while (iter != end) {
+        a = list_entry (iter, struct audit, elem);
+        if (a->tid == tid) {
+            return a;
+        }
+
+        iter = list_next (iter);
     }
 
     return NULL;
 }
+
+void audit_print_all (void) {
+    if (list_empty (&audit_list)) {
+        printf("Thread Audit Log: 0 processes.\n");
+        return;
+    }
+
+    struct list_elem *iter;
+    struct audit *a;
+
+    while (!list_empty (&audit_list)) {
+        iter = list_pop_front (&audit_list);
+        a = list_entry (iter, struct audit, elem);
+
+        printf("TID: %d NAME: %s START: %llu END: %llu ACTIVE %d\n", 
+                a->tid, a->name, a->tick_start, a->tick_end, a->tick_end - a->tick_start);
+
+        free (a);
+    }
+
+
+}
+
+

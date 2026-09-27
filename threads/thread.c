@@ -12,6 +12,7 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "threads/audit.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -106,6 +107,7 @@ thread_init (void)
   list_init  (&ready_list);
   list_init  (&all_list);
   init_queue ();
+  init_audit ();
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -215,6 +217,8 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
 
+  audit_record_start (t->tid, name);
+
   return tid;
 }
 
@@ -303,6 +307,9 @@ thread_exit (void)
   /* Remove thread from all threads list, set our status to dying,
      and schedule another process.  That process will destroy us
      when it calls thread_schedule_tail(). */
+
+  audit_record_end (thread_current ()->tid);
+
   intr_disable ();
   list_remove (&thread_current()->allelem);
   thread_current ()->status = THREAD_DYING;

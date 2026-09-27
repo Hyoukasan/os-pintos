@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "threads/audit.h"
+
 struct test 
   {
     const char *name;
@@ -55,6 +57,9 @@ run_test (const char *name)
         test_name = name;
         msg ("begin");
         t->function ();
+
+        audit_print_all();
+
         msg ("end");
         return;
       }
