@@ -40,7 +40,8 @@ static const struct test tests[] =
     {"mlfqs-nice-2", test_mlfqs_nice_2},
     {"mlfqs-nice-10", test_mlfqs_nice_10},
     {"mlfqs-block", test_mlfqs_block},
-    {"max-threads", test_max_threads}
+    {"max-threads", test_max_threads},
+    {"threads-audit", test_threads_audit}
   };
 
 static const char *test_name;

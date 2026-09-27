@@ -37,6 +37,7 @@ tests/threads_SRC += tests/threads/mlfqs-recent-1.c
 tests/threads_SRC += tests/threads/mlfqs-fair.c
 tests/threads_SRC += tests/threads/mlfqs-block.c
 tests/threads_SRC += tests/threads/max-threads.c
+tests/threads_SRC += tests/threads/threads-audit.c
 
 MLFQS_OUTPUTS = 				\
 tests/threads/mlfqs-load-1.output		\
