@@ -5,28 +5,45 @@
 #include "devices/timer.h"
 #include "threads/malloc.h"
 
-static struct list audit_list;
+static struct audit audit_log;
+
+static struct entry* get_entry (tid_t tid);
 
 void
 init_audit (void)
 {
-    list_init (&audit_list);
+    list_init (&audit_log.entry_list);
+    audit_log.count = 0;
 }
 
 void 
-audit_record_start (tid_t tid, const char *name)
+entry_record_start (tid_t tid, const char *name)
 {
-    struct audit* new_entry = (struct audit*)malloc (sizeof(struct audit*));
-    ASSERT (entry != NULL);
+    struct entry* e = (struct audit*)malloc (sizeof(struct audit));
+    ASSERT (new_entry != NULL);
 
-    entry->tid = tid;
-    strlcpy (entry->name, name, sizeof (entry->name));
-    entry->tick_start = 
+    e->tid = tid;
+    strlcpy (e->name, name, sizeof (e->name));
+    e->tick_start = timer_ticks ();
+    e->tick_end = 0;
+
+    list_push_back (&audit_log.entry_list, &e);
+
+    audit_log.count++;
 }
 
-
 void 
-audit_record_end (tid_t tid)
+entry_record_end (tid_t tid)
+{
+    struct entry* e = get_entry (tid);
+
+    if (e != NULL) {
+        e->end_tick = timer_ticks ();
+    }
+}
+
+static struct entry* 
+get_entry (tid_t tid) 
 {
 
 }
