@@ -255,7 +255,8 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  list_push_back (&ready_list, &t->elem);
+  //list_push_back (&ready_list, &t->elem);
+  list_insert_ordered(&ready_list, &t->elem, compare_priority_threads, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
@@ -329,7 +330,8 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread) 
-    list_push_back (&ready_list, &cur->elem);
+    //list_push_back (&ready_list, &cur->elem);
+    list_insert_ordered(&ready_list, &cur->elem, compare_priority_threads, NULL);
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -364,6 +366,19 @@ int
 thread_get_priority (void) 
 {
   return thread_current ()->priority;
+}
+
+/* Returns bool val comparing the priority of two threads*/
+bool 
+compare_priority_threads (const struct list_elem* elem1, 
+                          const struct list_elem* elem2,
+                          void* aux UNUSED)
+{
+
+  struct thread* t1 = list_entry(elem1, struct thread, elem);
+  struct thread* t2 = list_entry(elem2, struct thread, elem);
+
+  return t1->priority > t2->priority;
 }
 
 /* Sets the current thread's nice value to NICE. */
@@ -605,60 +620,6 @@ allocate_tid (void)
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
 
 /* Expention */
-
-
-/*
-static void 
-init_queue () 
-{
-  q.head = 0;
-  q.tail = 0;
-  q.count = 0;
-}
-
-
-static void
-queue_sort (void)
-{
-  for (size_t i = 1; i < (size_t)q.count; i++) {
-    size_t j = i;
-    while(j > 0 && q.sleeping_elem[j]->sleep_until < q.sleeping_elem[j - 1]->sleep_until) {
-      struct thread* t_tmp = q.sleeping_elem[j];
-      q.sleeping_elem[j] = q.sleeping_elem[j - 1];
-      q.sleeping_elem[j - 1] = t_tmp;
-      j--;
-    }
-  }
-}
-
-static void
-enqueue (struct thread* t)
-{
-  q.sleeping_elem[q.tail] = t;
-  q.tail = (q.tail + 1) & (MAX_SLEEPING_THREADS - 1);
-  q.count++;
-
-  if(q.count > 1) {
-    queue_sort ();
-  }
-}
-
-static struct thread*
-peek_queue (void)
-{
-  return (q.count > 0) ? q.sleeping_elem[q.head] : NULL;
-}
-
-static void
-pop_queue(void)
-{
-  struct thread* t = q.sleep_elem[q.head];
-  q.head = (q.head + 1) & (MAX_SLEEPING_THREADS - 1);
-  q.count--;
-
-  thread_unblock(t);
-}
-*/
 
 static void 
 init_queue () 
