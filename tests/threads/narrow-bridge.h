@@ -5,9 +5,6 @@
 #ifndef __narrow_bridge_h
 #define __narrow_bridge_h
 
-typedef unsigned int u32;
-
-
 enum car_priority
 {
    car_normal = 0,     // Low priority car

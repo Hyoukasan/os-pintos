@@ -9,30 +9,83 @@
 #include "threads/synch.h"
 #include "devices/timer.h"
 
+typedef unsigned int u32;
 
-static void init(unsigned int pot_size UNUSED)
+struct _monitor 
 {
-    // Not implemented.
+  struct lock pot;
+
+  struct condition bear_sleep;
+  struct condition pot_full;
+
+  u32 capacity_pot;
+  u32 honey_in_pot;
+};
+
+static struct _monitor m;
+
+static void init(u32 pot_size UNUSED)
+{
+    lock_init (&m.pot);
+
+    m.capacity_pot = pot_size;
+    m.honey_in_pot = 0;
+
+    cond_init (&m.bear_sleep);
+    cond_init (&m.pot_full);
 }
 
 static void bear(void* arg UNUSED)
 {
     msg("bear created.");
 
-    // Not implemented.
+    while (true) {
+      lock_acquire (&m.pot);
+      if (m.honey_in_pot == m.capacity_pot) {
+        m.honey_in_pot = 0;
+
+      //  msg("Bear ate all the honey!");
+
+        cond_broadcast (&m.pot_full, &m.pot);
+      } else {
+        cond_wait(&m.bear_sleep, &m.pot);
+      }
+
+      lock_release (&m.pot);
+    }
 }
 
 static void bee(void* arg UNUSED)
 {
     msg("bee %d created.", (int) arg);
 
-    // Not implemented.
+    while (true) {
+      timer_sleep(50);
+
+      lock_acquire (&m.pot);
+      
+      if (m.honey_in_pot < m.capacity_pot) {
+        m.honey_in_pot++;
+
+        //msg("Bee: %4s, total honey: %4u, ticks=%4llu", 
+        //    thread_current()->name,
+        //    m.honey_in_pot,
+        //    (unsigned long long) timer_ticks ());
+      }
+
+      if (m.honey_in_pot >= m.capacity_pot) {
+        cond_signal(&m.bear_sleep, &m.pot);
+        cond_wait (&m.pot_full, &m.pot);
+      }
+
+      lock_release (&m.pot);
+    }
 }
 
 
-void test_bear(unsigned int num_bees, unsigned int pot_size)
+void test_bear(u32 num_bees, u32 pot_size)
 {
-  unsigned int i;
+  u32 i;
   init(pot_size);
 
   thread_create("bear", PRI_DEFAULT, &bear, NULL);

@@ -46,7 +46,7 @@ void arrive_bridge(enum car_priority prio UNUSED, enum car_direction dir UNUSED)
 			cannot_go = true;
 		}
 
-		if (prio == 0 && (is_waiting[1][dir] == true || is_waiting[1][!dir] == true)) {
+		if (prio == 0 && (is_waiting[1][!dir] == true || is_waiting[1][dir] == true)) {
 			cannot_go = true;
 		}
 
