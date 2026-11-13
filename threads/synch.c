@@ -117,9 +117,12 @@ sema_up (struct semaphore *sema)
   sema->value++;
 
   old_level = intr_disable ();
-  if (!list_empty (&sema->waiters)) 
+  if (!list_empty (&sema->waiters)) {
+    list_sort (&sema->waiters, compare_priority_threads, NULL);
+
     thread_unblock (list_entry (list_pop_front (&sema->waiters),
                                 struct thread, elem));
+  }
 
   if (!intr_context ()) thread_yield ();
 
@@ -271,6 +274,8 @@ lock_release (struct lock *lock)
     struct lock *l = list_entry (e, struct lock, elem);
 
     if (!list_empty (&l->semaphore.waiters)) {
+      list_sort (&l->semaphore.waiters, compare_priority_threads, NULL);
+
       struct thread *highest_priority_t = list_entry (list_begin (&l->semaphore.waiters), 
                                                                          struct thread, elem);
 
@@ -284,7 +289,7 @@ lock_release (struct lock *lock)
 
   lock->holder = NULL;
   sema_up (&lock->semaphore);
-  
+
   intr_set_level(old_level);
 
   if (!intr_context ()) thread_yield ();

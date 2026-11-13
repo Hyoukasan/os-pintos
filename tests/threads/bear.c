@@ -44,7 +44,7 @@ static void bear(void* arg UNUSED)
       if (m.honey_in_pot == m.capacity_pot) {
         m.honey_in_pot = 0;
 
-      //  msg("Bear ate all the honey!");
+        msg("Bear ate all the honey!");
 
         cond_broadcast (&m.pot_full, &m.pot);
       } else {
@@ -67,10 +67,10 @@ static void bee(void* arg UNUSED)
       if (m.honey_in_pot < m.capacity_pot) {
         m.honey_in_pot++;
 
-        //msg("Bee: %4s, total honey: %4u, ticks=%4llu", 
-        //    thread_current()->name,
-        //    m.honey_in_pot,
-        //    (unsigned long long) timer_ticks ());
+        msg("Bee: %4s, total honey: %4u, ticks=%4llu", 
+            thread_current()->name,
+            m.honey_in_pot,
+            (unsigned long long) timer_ticks ());
       }
 
       if (m.honey_in_pot >= m.capacity_pot) {
